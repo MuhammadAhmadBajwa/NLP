@@ -1,9 +1,8 @@
 import regex as re
 
 class BPETokenizer:
-    def __init__(self, text, lang='en', iterations=3, min_merge_freq=5):
+    def __init__(self, text, iterations=3, min_merge_freq=5):
         self.text = text.lower()
-        self.lang = lang
         self.iterations = iterations
         self.min_merge_freq = min_merge_freq
         self.stoi, self.itos = self.build_dict(self.text)
@@ -18,14 +17,10 @@ class BPETokenizer:
         return stoi, itos
 
     def word_tokenize(self, text):
-        if self.lang == 'en':
-            word_tokenizer = re.compile(
-                r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
-            )
-            return re.findall(word_tokenizer, text)
-        elif self.lang == 'ur':
-            words = text.split()
-            return [' ' + word for word in words]
+        word_tokenizer = re.compile(
+            r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
+        )
+        return re.findall(word_tokenizer, text)
 
     def convert_to_tokens(self, word):
         return [self.stoi[ch] for ch in word]
@@ -85,6 +80,6 @@ class BPETokenizer:
 # text = ''
 # for line in text_list:
 #     text += line
-# tokenizer = BPETokenizer(text,lang='ur')
+# tokenizer = BPETokenizer(text)
 # encoded_tokens = tokenizer.encode()
 # decoded_text = tokenizer.decode(encoded_tokens)
