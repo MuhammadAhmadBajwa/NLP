@@ -80,11 +80,11 @@ class BPETokenizer:
         return ''.join([self.itos[token] for token in tokens])
 
 # Main
-import pandas as pd
-text_list = pd.read_csv('Sentiment Dataset Urdu.csv')['Text']
-text = ''
-for line in text_list:
-    text += line
-tokenizer = BPETokenizer(text,lang='ur')
-encoded_tokens = tokenizer.encode()
-decoded_text = tokenizer.decode(encoded_tokens)
+# import pandas as pd
+# text_list = pd.read_csv('Sentiment Dataset Urdu.csv')['Text']
+# text = ''
+# for line in text_list:
+#     text += line
+# tokenizer = BPETokenizer(text,lang='ur')
+# encoded_tokens = tokenizer.encode()
+# decoded_text = tokenizer.decode(encoded_tokens)
