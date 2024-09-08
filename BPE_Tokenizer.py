@@ -1,15 +1,51 @@
 import regex as re
 
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.token_id = None
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word, token_id):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.token_id = token_id
+
+    def search_longest(self, text, start_index):
+        node = self.root
+        longest_match = None
+        longest_match_len = 0
+
+        for i in range(start_index, len(text)):
+            char = text[i]
+            if char in node.children:
+                node = node.children[char]
+                if node.token_id is not None:
+                    longest_match = node.token_id
+                    longest_match_len = i - start_index + 1
+            else:
+                break
+
+        return longest_match, longest_match_len
+
+
 class BPETokenizer:
-    def __init__(self, text, iterations=3, min_merge_freq=5):
+    def __init__(self, text, iterations=4, min_merge_freq=0):
         self.text = text.lower()
         self.iterations = iterations
         self.min_merge_freq = min_merge_freq
         self.stoi, self.itos = self.build_dict(self.text)
-        
+        self.stoi["<UNK>"] = len(self.stoi)
+        self.itos[len(self.itos)] = "<UNK>"
     def vocab_size(self):
-        return len(stoi)
-        
+        return len(self.stoi)
+
     def build_dict(self, text):
         unique_chars = sorted(list(set(text)))
         stoi = {ch: i for i, ch in enumerate(unique_chars)}
@@ -25,7 +61,7 @@ class BPETokenizer:
     def convert_to_tokens(self, word):
         return [self.stoi[ch] for ch in word]
 
-    def encode(self):
+    def train(self):
         words = self.word_tokenize(self.text)
         word_tokens = [self.convert_to_tokens(word) for word in words]
 
@@ -38,9 +74,6 @@ class BPETokenizer:
 
             self.update_tokens(merges)
             word_tokens = self.merge_tokens(word_tokens, merges)
-        
-        flattened_tokens = [token for word in word_tokens for token in word]
-        return flattened_tokens
 
     def get_pair_counts(self, word_tokens):
         counts = {}
@@ -71,12 +104,42 @@ class BPETokenizer:
             new_word_tokens.append(new_word)
         return new_word_tokens
 
+    def encode(self,text):
+        trie = Trie()
+        for word, token_id in self.stoi.items():
+            trie.insert(word, token_id)
+
+        tokens = []
+        i = 0
+
+        while i < len(text):
+            # Find the longest match in the Trie starting from index i
+            token_id, match_len = trie.search_longest(text, i)
+
+            if token_id is not None:
+                tokens.append(token_id)
+                i += match_len
+            else:
+                tokens.append(self.stoi["<UNK>"])  # <UNK> represents unknown tokens
+                i += 1
+
+        return tokens
+
     def decode(self, tokens):
         return ''.join([self.itos[token] for token in tokens])
 
-# Main
+# # Main
+# text = open('/content/TheVerdict.txt','r',encoding='utf-8').read().lower()
+# tokenizer = BPETokenizer(text)
+# tokenizer.train()
+# encoded_tokens = tokenizer.encode('hello world')
+# print(encoded_tokens)
+# decoded_text = tokenizer.decode(encoded_tokens)
+# print(decoded_text)
+
+# # Main
 # import pandas as pd
-# text_list = pd.read_csv('Sentiment Dataset Urdu.csv')['Text']
+# text_list = pd.read_csv('Sentiment Dataset Urdu.csv',encoding='utf-8')['Text']
 # text = ''
 # for line in text_list:
 #     text += line
